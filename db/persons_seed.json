@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Carlos Ramirez",
+    "document": "10234567",
+    "email": "carlos.ramirez@example.com",
+    "phone": "3001234567"
+  },
+
+  {
+    "name": "Ana Torres",
+    "document": "998877",
+    "email": "ana.torres@example.com",
+    "phone": "3117654321",
+    "invoices": []
+  },
+
+  {
+    "name": "Laura Gomez",
+    "document": "55667788",
+    "email": "laura.gomez@example.com",
+    "phone": "3209988776"
+  },
+
+  {
+    "name": "Sofia Martinez",
+    "document": "778899",
+    "email": "sofia.m@example.com",
+    "phone": "3154448899",
+    "invoices": []
+  }
+]

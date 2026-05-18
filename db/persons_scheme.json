@@ -1,0 +1,50 @@
+db.createCollection("persons", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      title: "Person Object Validation",
+      required: ["_id", "name", "document", "email", "phone"],
+      additionalProperties: false,
+      minProperties: 5,
+      maxProperties: 6,
+      properties: {
+        _id: {
+          bsonType: "objectId"
+        },
+        name: {
+          bsonType: "string",
+          minLength: 3,
+          maxLength: 100,
+          description: "person name - required"
+        },
+        document: {
+          bsonType: "string",
+          minLength: 4,
+          maxLength: 20,
+          description: "person document - required"
+        },
+        email: {
+          bsonType: "string",
+          minLength: 6,
+          maxLength: 100,
+          description: "person email - required"
+        },
+		phone: {
+          bsonType: "string",
+          minLength: 6,
+          maxLength: 15,
+          description: "person phone - required"
+        },
+        invoices:{
+          bsonType: "array",
+          description: "Recent invoice object ids",
+          maxItems: 10,
+          items:
+          {
+              bsonType: "objectId"
+          }
+        }
+      },
+    }
+  }
+})
