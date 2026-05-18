@@ -1,30 +1,73 @@
-<form id="checkout-form" method="POST" action="/login/add_form/">
-    {% csrf_token %}
+{% extends "base.html" %}
 
-    <div style="margin-bottom: 15px;">
-        <label for="documentId">Document ID:</label>
-        <input type="number" id="documentId" name="documentId" required>
-        <button type="button" id="searchBtn">Search Database</button>
-        <span id="searchStatus" style="margin-left: 10px; color: gray;"></span>
-    </div>
+{% block title %}POS - Verification Workspace{% endblock %}
 
-    <div style="margin-bottom: 15px;">
-        <label for="name">Full Name:</label>
-        <input type="text" id="name" name="name" required disabled>
-    </div>
+{% block layout %}
+<div class="vh-100 vw-100 d-flex flex-column bg-body position-relative p-4 p-md-5">
 
-    <div style="margin-bottom: 15px;">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required disabled>
-    </div>
+  <!--  <header class="w-100 mb-4 flex-shrink-0">
+        <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-light min-h-touch d-inline-flex align-items-center px-4 font-display text-uppercase tracking-wider">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="me-2">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Menu
+        </a>
+    </header>-->
 
-    <div style="margin-bottom: 15px;">
-        <label for="phone">Phone:</label>
-        <input type="tel" id="phone" name="phone" required disabled>
-    </div>
+    <main class="flex-grow-1 d-flex flex-column justify-content-center mx-auto w-100" style="max-width: 800px;">
 
-    <button type="submit" id="submitBtn">Continue</button>
-</form>
+        <div class="mb-5">
+            <div class="text-primary-custom font-display text-uppercase tracking-widest small mb-2">Customer Verification</div>
+            <h1 class="font-display display-4 text-white text-uppercase tracking-wide mb-3">Electronic Invoice Registry</h1>
+            <p class="text-muted fs-5 mb-0" style="max-width: 600px;">
+                Query customer records to assign legal financial fields, or create a brand-new registration on the fly.
+            </p>
+        </div>
+
+        <form id="checkout-form" method="POST" action="/login/add_form/" class="w-100" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="documentId" class="font-display text-uppercase text-muted small tracking-wider mb-2 d-block">Document ID (NIT / CC)</label>
+                    <div class="input-group">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="documentId" name="documentId" required
+                               class="form-control bg-surface-low text-white border-surface-variant min-h-touch font-monospace fs-5 px-3"
+                               placeholder="Scan or type customer documentation ID">
+                        <button type="button" id="searchBtn" class="btn btn-outline-light px-4 font-display text-uppercase tracking-wider min-h-touch">
+                            Verify Identity
+                        </button>
+                    </div>
+                    <div id="searchStatus" class="form-text mt-2 small font-display text-uppercase tracking-wide"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="name" class="font-display text-uppercase text-muted small tracking-wider mb-2 d-block">Full Name / Corporate Title</label>
+                    <input type="text" id="name" name="name" required readonly
+                           class="form-control bg-surface-low text-white border-surface-variant min-h-touch px-3 transition-all">
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="email" class="font-display text-uppercase text-muted small tracking-wider mb-2 d-block">Email Address</label>
+                    <input type="email" id="email" name="email" required readonly
+                           class="form-control bg-surface-low text-white border-surface-variant min-h-touch px-3 transition-all">
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="phone" class="font-display text-uppercase text-muted small tracking-wider mb-2 d-block">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required readonly
+                           class="form-control bg-surface-low text-white border-surface-variant min-h-touch px-3 transition-all">
+                </div>
+            </div>
+
+            <div class="pt-5 border-top border-surface-variant mt-5 d-flex flex-column flex-sm-row gap-3">
+                <button type="submit" id="submitBtn" class="btn btn-primary-custom flex-grow-1 min-h-touch font-display text-uppercase tracking-wider">
+                    Continue
+                </button>
+            </div>
+        </form>
+    </main>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -35,64 +78,85 @@
         const phoneInput = document.getElementById("phone");
         const statusText = document.getElementById("searchStatus");
 
-        function setInputsDisabled(disabled) {
-            nameInput.disabled = disabled;
-            emailInput.disabled = disabled;
-            phoneInput.disabled = disabled;
+        function setInputsReadOnly(isReadOnly) {
+            nameInput.readOnly = isReadOnly;
+            emailInput.readOnly = isReadOnly;
+            phoneInput.readOnly = isReadOnly;
+
+            [nameInput, emailInput, phoneInput].forEach(input => {
+                if (isReadOnly) {
+                    input.classList.add('text-muted');
+                    input.style.backgroundColor = 'rgba(28, 27, 27, 0.4)';
+                } else {
+                    input.classList.remove('text-muted');
+                    input.style.backgroundColor = 'var(--pos-surface-low)';
+                }
+            });
         }
 
-        setInputsDisabled(true);
+        // Lock fields down initially
+        setInputsReadOnly(true);
 
         searchBtn.addEventListener("click", function() {
             const documentId = docInput.value.trim();
+            docInput.classList.remove('is-invalid', 'is-valid');
 
             if (!documentId) {
-                statusText.textContent = "Please enter a document ID.";
-                statusText.style.color = "red";
+                statusText.textContent = "Identity context initialization error: string required.";
+                statusText.className = "form-text mt-2 small font-display text-uppercase tracking-wide text-danger";
+                docInput.classList.add('is-invalid');
                 return;
             }
 
-            // UI Feedback during search
             searchBtn.disabled = true;
-            statusText.textContent = "Searching...";
-            statusText.style.color = "blue";
+            statusText.textContent = "Querying localized network clusters...";
+            statusText.className = "form-text mt-2 small font-display text-uppercase tracking-wide text-warning";
 
-            // Call the Django view we created
             fetch(`/login/find/${documentId}`)
                 .then(response => {
                     if (response.status === 404) {
-                        // User not found: Clear fields so they can enter manually
-                        setInputsDisabled(false);
+                        setInputsReadOnly(false);
                         nameInput.value = "";
                         emailInput.value = "";
                         phoneInput.value = "";
-                        statusText.textContent = "User not found. Please enter manually.";
-                        statusText.style.color = "orange";
+                        statusText.textContent = "Record missing. Input open for manual compilation.";
+                        statusText.className = "form-text mt-2 small font-display text-uppercase tracking-wide text-info";
+                        docInput.classList.add('is-valid');
+                        nameInput.focus();
                         return null;
                     }
-                    if (!response.ok) throw new Error("Network response was not ok");
+                    if (!response.ok) throw new Error("Database interface fault response.");
                     return response.json();
                 })
                 .then(data => {
                     if (data && data.found) {
-                        // User found: Auto-fill the fields
                         nameInput.value = data.name;
                         emailInput.value = data.email;
                         phoneInput.value = data.phone;
-                        statusText.textContent = "User found and populated!";
-                        statusText.style.color = "green";
-                        setInputsDisabled(true);
+
+                        statusText.textContent = "Data successfully mapped from repository memory.";
+                        statusText.className = "form-text mt-2 small font-display text-uppercase tracking-wide text-success";
+                        docInput.classList.add('is-valid');
+                        setInputsReadOnly(true);
                     }
                 })
                 .catch(error => {
-                    console.error("Error:", error);
-                    statusText.textContent = "Error connecting to server.";
-                    statusText.style.color = "red";
+                    console.error("Exception handled:", error);
+                    statusText.textContent = "Database connectivity failure. Check local terminal bridge.";
+                    statusText.className = "form-text mt-2 small font-display text-uppercase tracking-wide text-danger";
+                    docInput.classList.add('is-invalid');
                 })
                 .finally(() => {
-                    // Re-enable the search button
                     searchBtn.disabled = false;
                 });
         });
+
+        docInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                searchBtn.click();
+            }
+        });
     });
 </script>
+{% endblock %}
