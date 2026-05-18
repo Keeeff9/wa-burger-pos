@@ -83,8 +83,8 @@ WSGI_APPLICATION = 'restaurant.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'restaurant_db',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
         'CLIENT': {
             'host': 'mongodb://localhost:27017',
         }
