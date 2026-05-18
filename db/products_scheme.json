@@ -1,0 +1,43 @@
+db.createCollection("products", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      title: "Product Object Validation",
+      required: ["_id", "name", "price", "category", "has_stock"],
+      minProperties: 5,
+      maxProperties: 7,
+      properties: {
+        _id: {
+          bsonType: "objectId"
+        },
+        name: {
+          bsonType: "string",
+          minLength: 3,
+          maxLength: 50,
+          description: "product name - required"
+        },
+        price: {
+          bsonType: "number",
+          minimum: 500,
+          maximum: 10000000,
+          description: "product price - required"
+        },
+        category: {
+          bsonType: "string",
+          enum: ["MAIN", "APETIZER", "DESSERT", "DRINK"],
+          description: "product category - required"
+        },
+        has_stock: {
+          bsonType: "bool",
+          description: "product availability - required"
+        },
+        description: {
+          bsonType: "string",
+          minLength: 3,
+          maxLength: 500,
+          description: "product description - optional"
+        }
+      },
+    }
+  }
+})

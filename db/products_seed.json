@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Classic Burger",
+        "price": 25000,
+        "category": "MAIN",
+        "has_stock": true,
+        "description": "Beef patty with lettuce and tomato"
+    },
+    {
+        "name": "Cheese Burger",
+        "price": 30000,
+        "category": "MAIN",
+        "has_stock": true,
+        "description": "Beef patty with melt cheese and tomato"
+    }
+]
