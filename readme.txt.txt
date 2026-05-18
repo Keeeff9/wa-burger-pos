@@ -1,5 +1,6 @@
 ## Database Setup
-
+ db name = restaurant_db
+ 
 1. Make sure MongoDB is running locally on port 27017.
 
 2. Open MongoDB Compass and connect to `mongodb://localhost:27017/`
