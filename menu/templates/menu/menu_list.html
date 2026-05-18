@@ -1,0 +1,71 @@
+{% block content %}
+
+<!-- Category filters -->
+<div class="filters">
+    <button class="filter-btn active" onclick="filterCategory('ALL')">All</button>
+    <button class="filter-btn" onclick="filterCategory('MAIN')">Main</button>
+    <button class="filter-btn" onclick="filterCategory('APETIZER')">Apetizer</button>
+    <button class="filter-btn" onclick="filterCategory('DESSERT')">Dessert</button>
+    <button class="filter-btn" onclick="filterCategory('DRINK')">Drink</button>
+</div>
+
+<!-- Product grid -->
+<div class="product-grid" id="product-grid">
+    {% for product in products %}
+    <div class="product-card" data-category="{{ product.category }}">
+
+        {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        {% else %}
+            <div class="no-image">No image</div>
+        {% endif %}
+
+        {% if not product.has_stock %}
+            <span class="sold-out">SOLD OUT</span>
+        {% endif %}
+
+        <div class="product-info">
+            <h3>{{ product.name }}</h3>
+            <p class="description">{{ product.description }}</p>
+            <div class="product-footer">
+                <span class="price">${{ product.price|floatformat:0 }}</span>
+                {% if product.has_stock %}
+                   <button class="add-btn" onclick="addToCart('{{ product.id }}', '{{ product.name }}', '{{ product.price }}',)">
+                    + Add
+                   </button>
+                {% else %}
+                    <button class="add-btn disabled" disabled>Unavailable</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+<script>
+    function filterCategory(category) {
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        // Show/hide cards
+        document.querySelectorAll('.product-card').forEach(card => {
+            if (category === 'ALL' || card.dataset.category === category) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    function addToCart(id, name, price) {
+        // This function will be connected to the cart app
+        console.log('Adding to cart:', { id, name, price });
+        alert(name + ' added to cart!');
+    }
+</script>
+
+{% endblock %}

@@ -1,4 +1,5 @@
 import json
+from django.shortcuts import render
 from bson import ObjectId
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -11,8 +12,9 @@ def menu_list(request):
     if request.method == "GET":
         products = list(products_collection.find())
         for product in products:
-            product["_id"] = str(product["_id"])  # ObjectId a string
-        return JsonResponse(products, safe=False)
+            product["id"] = str(product["_id"])  
+            del product["_id"]                   
+        return render(request, "menu/menu_list.html", {"products": products})
 
 
 # GET /menu/<id>/
