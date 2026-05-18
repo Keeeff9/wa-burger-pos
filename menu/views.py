@@ -37,6 +37,7 @@ def add_product(request):
             category=data.get("category"),
             has_stock=data.get("has_stock"),
             description=data.get("description", ""),
+            image_url=data.get("image_url", ""),
         )
 
         errors = product.is_valid()

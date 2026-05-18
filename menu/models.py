@@ -1,12 +1,13 @@
 CATEGORIES = ["MAIN", "APETIZER", "DESSERT", "DRINK"]
 
 class Product:
-    def __init__(self, name, price, category, has_stock, description=""):
+    def __init__(self, name, price, category, has_stock, description="", image_url=""):
         self.name = name
         self.price = price
         self.category = category
         self.has_stock = has_stock
         self.description = description
+        self.image_url = image_url
 
     def is_valid(self):
         errors = []
@@ -25,6 +26,9 @@ class Product:
 
         if self.description and not (3 <= len(self.description) <= 500):
             errors.append("Description must be between 3 and 500 characters.")
+        
+        if self.image_url and not self.image_url.startswith("http"):
+            errors.append("must be a valid url")
 
         return errors
 
@@ -35,4 +39,5 @@ class Product:
             "category": self.category,
             "has_stock": self.has_stock,
             "description": self.description,
+            "image_url": self.image_url,
         }
