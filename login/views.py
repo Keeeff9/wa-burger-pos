@@ -39,6 +39,10 @@ def search_person(request, document_id):
         person = persons_collection.find_one({"document": document_id})
 
         if person:
+            # request.session['customer'] = {
+            #     'document': document_id,
+            #     'name': person.get('name', ""),
+            # }
             return JsonResponse({
                 "found": True,
                 "name": person.get("name", ""),
@@ -81,6 +85,11 @@ def add_user_from_form(request):
     existing_person = persons_collection.find_one({
         "document": document
     })
+
+    # request.session['customer'] = {
+    #     'document': document,
+    #     'name': request.POST.get("name")
+    # }
 
     if existing_person:
         return redirect("/menu")
