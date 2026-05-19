@@ -60,7 +60,8 @@ def add_to_cart(request):
 
     else:
         return JsonResponse({'error': 'Invalid action. Use: add, increment, decrement'}, status=400)
-
+    request.session["cart"] = user_cart
+    request.session.modified = True
     total_items, total_price = calculate_totals(user_cart)
     current_item = user_cart.get(product_id)
     item_quantity = current_item['quantity'] if current_item else 0
@@ -89,7 +90,9 @@ def remove_from_cart(request):
 
     user_cart = get_cart_instance(request)
     user_cart.pop(product_id, None)
-
+    request.session["cart"] = user_cart
+    request.session.modified = True
+    
     total_items, total_price = calculate_totals(user_cart)
     return JsonResponse({
         'status': 'ok',

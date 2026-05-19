@@ -67,7 +67,7 @@
         <a href="{% url 'menu:menu_list' %}" class="btn bg-surface-low border-surface-variant text-white px-4 d-flex align-items-center">
             ← VOLVER AL MENÚ
         </a>
-        <form method="POST" class="m-0">
+        <form action="{% url 'facturacion:invoice' %}" method="POST" class="m-0">
             {% csrf_token %}
             <button type="submit"
                     class="btn btn-primary-custom font-display text-uppercase tracking-wider px-5 d-flex align-items-center gap-4"
