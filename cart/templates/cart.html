@@ -18,33 +18,44 @@
                 <h2 class="font-display text-white mb-1">Review Order</h2>
                 <p class="text-muted mb-0">Manage items before proceeding to checkout</p>
             </div>
-            <span class="badge rounded-pill border border-warning text-warning px-3 py-2 bg-dark">
+            <span id="badge-total-items" class="badge rounded-pill border border-warning text-warning px-3 py-2 bg-dark">
                 {{ total_items }} Items in Cart
             </span>
         </div>
 
-        <div class="d-flex flex-column gap-3 mb-5">
+        <div id="cart-list" class="d-flex flex-column gap-3 mb-5">
             {% for id, item in cart_items.items %}
-            <div class="card bg-surface-low border-surface-variant rounded-4 p-3 d-flex flex-row align-items-center gap-4">
+            <div class="card bg-surface-low border-surface-variant rounded-4 p-3 d-flex flex-row align-items-center gap-4"
+                 data-product-id="{{ id }}">
                 <div class="flex-grow-1">
                     <h4 class="font-display text-white h5 mb-1">{{ item.name }}</h4>
-                    <div class="text-primary-custom fw-bold">${{ item.price|floatformat:2 }} <span class="text-muted small fw-normal">/ unit</span></div>
+                    <div class="text-primary-custom fw-bold">
+                        ${{ item.price|floatformat:2 }}
+                        <span class="text-muted small fw-normal">/ unit</span>
+                    </div>
                 </div>
-                
+
                 <div class="d-flex align-items-center gap-3">
                     <div class="bg-dark rounded-pill border border-surface-variant px-2 py-1 d-flex align-items-center">
-                        <button class="btn btn-sm text-white px-2 py-0 border-0">-</button>
-                        <span class="text-white fw-bold px-3">{{ item.quantity }}</span>
-                        <button class="btn btn-sm text-white px-2 py-0 border-0">+</button>
+                        <button class="btn btn-sm text-white px-2 py-0 border-0 btn-decrement"
+                                data-id="{{ id }}">−</button>
+                        <span class="text-white fw-bold px-3 item-quantity">{{ item.quantity }}</span>
+                        <button class="btn btn-sm text-white px-2 py-0 border-0 btn-increment"
+                                data-id="{{ id }}">+</button>
                     </div>
-                    <div class="text-end" style="width: 80px;">
-                        <div class="text-white fw-bold mb-1">${% widthratio item.price 1 item.quantity %}</div>
-                        <a href="#" class="text-danger small text-decoration-none" style="font-size: 0.8rem;">🗑️ Remove</a>
+                    <div class="text-end" style="width: 90px;">
+                        <div class="text-white fw-bold mb-1 item-total">
+                            ${{ item.price|floatformat:2 }}
+                        </div>
+                        <button class="btn btn-link text-danger small text-decoration-none p-0 btn-remove"
+                                data-id="{{ id }}" style="font-size: 0.8rem;">
+                            🗑️ Remove
+                        </button>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="text-center py-5">
+            <div id="empty-cart" class="text-center py-5">
                 <p class="text-muted">Your cart is empty.</p>
                 <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-light mt-2">Back to Menu</a>
             </div>
@@ -56,20 +67,133 @@
         <a href="{% url 'menu:menu_list' %}" class="btn bg-surface-low border-surface-variant text-white px-4 d-flex align-items-center">
             ← VOLVER AL MENÚ
         </a>
-        <form method="POST"  class="m-0">
+        <form method="POST" class="m-0">
             {% csrf_token %}
-            <button type="submit" class="btn btn-primary-custom font-display text-uppercase tracking-wider px-5 d-flex align-items-center gap-4" style="font-size: 1.25rem;">
-                <span class="badge bg-dark text-white">{{ total_items }}</span>
+            <button type="submit"
+                    class="btn btn-primary-custom font-display text-uppercase tracking-wider px-5 d-flex align-items-center gap-4"
+                    style="font-size: 1.25rem;">
+                <span id="checkout-qty" class="badge bg-dark text-white">{{ total_items }}</span>
                 CONFIRMAR Y PAGAR
-                <span class="fw-bold fs-4">${{ total_price|floatformat:2 }}</span>
+                <span id="checkout-price" class="fw-bold fs-4">${{ total_price|floatformat:2 }}</span>
             </button>
         </form>
     </div>
 </div>
 
 <script>
+const URLS = {
+    update: "{% url 'cart:add_to_cart' %}",
+    remove: "{% url 'cart:remove_from_cart' %}",
+};
 
+function fmt(value) {
+    const n = parseFloat(value);
+    return isNaN(n) ? '0.00' : n.toFixed(2);
+}
 
+async function postJSON(url, body) {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+function updateGlobalTotals(totalItems, totalPrice) {
+    document.getElementById('badge-total-items').textContent = `${totalItems} Items in Cart`;
+    document.getElementById('checkout-qty').textContent = totalItems;
+    document.getElementById('checkout-price').textContent = `$${fmt(totalPrice)}`;
+}
+
+function animateRemove(card, onDone) {
+    card.style.transition = 'opacity 0.25s, transform 0.25s';
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(30px)';
+    setTimeout(onDone, 260);
+}
+
+function checkEmptyCart() {
+    const remaining = document.querySelectorAll('#cart-list [data-product-id]');
+    if (remaining.length === 0) {
+        document.getElementById('cart-list').innerHTML = `
+            <div id="empty-cart" class="text-center py-5">
+                <p class="text-muted">Your cart is empty.</p>
+                <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-light mt-2">Back to Menu</a>
+            </div>`;
+    }
+}
+
+function setCardLoading(card, loading) {
+    card.querySelectorAll('button').forEach(btn => btn.disabled = loading);
+}
+
+async function handleUpdate(productId, action) {
+    const card = document.querySelector(`[data-product-id="${productId}"]`);
+    if (!card) return;
+
+    setCardLoading(card, true);
+    try {
+        const data = await postJSON(URLS.update, { id: productId, action });
+
+        if (data.item_removed) {
+            animateRemove(card, () => {
+                card.remove();
+                checkEmptyCart();
+            });
+        } else {
+            card.querySelector('.item-quantity').textContent = data.item_quantity;
+            card.querySelector('.item-total').textContent = `$${fmt(data.item_total)}`;
+            setCardLoading(card, false);
+        }
+
+        updateGlobalTotals(data.total_items, data.total_price);
+
+    } catch (err) {
+        console.error('Error updating cart:', err);
+        setCardLoading(card, false);
+    }
+}
+
+async function handleRemove(productId) {
+    const card = document.querySelector(`[data-product-id="${productId}"]`);
+    if (!card) return;
+
+    setCardLoading(card, true);
+    try {
+        const data = await postJSON(URLS.remove, { id: productId });
+        animateRemove(card, () => {
+            card.remove();
+            checkEmptyCart();
+        });
+        updateGlobalTotals(data.total_items, data.total_price);
+    } catch (err) {
+        console.error('Error removing item:', err);
+        setCardLoading(card, false);
+    }
+}
+
+document.getElementById('cart-list').addEventListener('click', (e) => {
+    const inc = e.target.closest('.btn-increment');
+    const dec = e.target.closest('.btn-decrement');
+    const rem = e.target.closest('.btn-remove');
+
+    if (inc) handleUpdate(inc.dataset.id, 'increment');
+    else if (dec) handleUpdate(dec.dataset.id, 'decrement');
+    else if (rem) handleRemove(rem.dataset.id);
+});
+
+document.querySelectorAll('#cart-list [data-product-id]').forEach(card => {
+    const priceText = card.querySelector('.text-primary-custom').textContent.trim();
+    const price = parseFloat(priceText.replace('$', ''));
+    const qty   = parseInt(card.querySelector('.item-quantity').textContent.trim(), 10);
+    card.querySelector('.item-total').textContent = `$${fmt(price * qty)}`;
+});
 </script>
-
 {% endblock %}
